@@ -1,7 +1,7 @@
 package main
 
 import (
-	"blueis/internal/kvstore"
+	"blueis/cmd/node/internal/kv"
 	"context"
 	"encoding/json"
 	"log"
@@ -27,7 +27,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	kv := kvstore.GetKeyValueService(ctx, cancel)
+	kv := kv.GetKeyValueService(ctx, cancel)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/kv", func(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +67,7 @@ func main() {
 	log.Println("Server exited gracefully")
 }
 
-func handleKV(w http.ResponseWriter, r *http.Request, kv *kvstore.KeyValueService) {
+func handleKV(w http.ResponseWriter, r *http.Request, kv *kv.KeyValueService) {
 	w.Header().Set("Content-Type", "application/json")
 
 	key := r.URL.Query().Get("key")
@@ -96,7 +96,7 @@ func handleKV(w http.ResponseWriter, r *http.Request, kv *kvstore.KeyValueServic
 	}
 }
 
-func handleGet(w http.ResponseWriter, kv *kvstore.KeyValueService, key string) {
+func handleGet(w http.ResponseWriter, kv *kv.KeyValueService, key string) {
 	val, err := kv.Get(key)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -113,7 +113,7 @@ func handleGet(w http.ResponseWriter, kv *kvstore.KeyValueService, key string) {
 	})
 }
 
-func handleSet(w http.ResponseWriter, r *http.Request, kv *kvstore.KeyValueService, key string) {
+func handleSet(w http.ResponseWriter, r *http.Request, kv *kv.KeyValueService, key string) {
 	var req setRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -140,7 +140,7 @@ func handleSet(w http.ResponseWriter, r *http.Request, kv *kvstore.KeyValueServi
 	})
 }
 
-func handleDelete(w http.ResponseWriter, kv *kvstore.KeyValueService, key string) {
+func handleDelete(w http.ResponseWriter, kv *kv.KeyValueService, key string) {
 	val, err := kv.Delete(key)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
